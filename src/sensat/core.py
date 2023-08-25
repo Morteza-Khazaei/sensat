@@ -275,15 +275,15 @@ def main():
 
     parser.add_argument("username", type=str, help="Scihub username. Sign up at https://scihub.copernicus.eu/")
     parser.add_argument("password", type=str, help="Scihub password")
-    parser.add_argument("tiles", nargs='+', help="Tile name(s) to download")
-    parser.add_argument("--level", type=str, default="1C", help="Download level '1C' (default) or '2A' data")
-    parser.add_argument("--start", type=str, default="20150523", help="Start date for search in format YYYYMMDD. Defaults to '20150523'")
-    parser.add_argument("--end", type=str, default=datetime.datetime.today().strftime('%Y%m%d'),
+    parser.add_argument("-t", "--tiles", type=list, help="Tile name(s) to download")
+    parser.add_argument("-l", "--level", type=str, default="1C", help="Download level '1C' (default) or '2A' data")
+    parser.add_argument("-s", "--start", type=str, default="20150523", help="Start date for search in format YYYYMMDD. Defaults to '20150523'")
+    parser.add_argument("-e", "--end", type=str, default=datetime.datetime.today().strftime('%Y%m%d'),
                         help="End date for search in format YYYYMMDD. Defaults to today's date")
-    parser.add_argument("--maxcloud", type=int, default=100, help="Maximum percentage of cloud cover to download. Defaults to 100")
-    parser.add_argument("--minsize", type=float, default=25.0, help="Minimum filesize to download in MB. Defaults to 25.0 MB")
-    parser.add_argument("--output-dir", type=str, default=os.getcwd(), help="Output directory. Defaults to the present working directory")
-    parser.add_argument("--remove", action="store_true", help="Delete level 1C .zip files after decompression is complete")
+    parser.add_argument("-c", "--maxcloud", type=int, default=100, help="Maximum percentage of cloud cover to download. Defaults to 100")
+    parser.add_argument("-m", "--minsize", type=float, default=25.0, help="Minimum filesize to download in MB. Defaults to 25.0 MB")
+    parser.add_argument("-d", "--output-dir", type=str, default=os.getcwd(), help="Output directory. Defaults to the present working directory")
+    parser.add_argument("-r", "--remove", action="store_true", help="Delete level 1C .zip files after decompression is complete")
 
     args = parser.parse_args()
 
