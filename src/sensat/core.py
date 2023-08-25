@@ -292,5 +292,5 @@ def main():
 
     args = parser.parse_args()
 
-    SenSat(args.username, args.password, args.tiles, args.level, args.start, args.end, 
+    obj = SenSat(args.username, args.password, args.tiles, args.level, args.start, args.end, 
            args.maxcloud, args.minsize, args.output_dir, args.remove)
