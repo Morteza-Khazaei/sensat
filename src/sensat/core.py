@@ -59,7 +59,6 @@ class SenSat:
         return None
 
 
-S
     def _removeZip(self, zip_file):
         """
         Deletes Level 1C .zip file from disk.
