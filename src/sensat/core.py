@@ -271,11 +271,16 @@ class SenSat:
 
 
 def main():
+    s2_tiles = ['39STD', '39STC', '39STB', '38SQJ', '38SQH', 
+             '38SQG', '39SUC', '39SUB', '39SUA', '39SWA', 
+             '39SWV', '39SVB', '39SVA', '39SXA', '39SXV', 
+             '39SYB', '39SYA', '39SYV', '40SBG', '40SBF', 
+             '40SCH', '40SCG', '40SCF', '40SDH', '40SDG']
     parser = argparse.ArgumentParser(description="Download Sentinel-2 data from the Copernicus Open Access Hub")
 
     parser.add_argument("-u", "--username", type=str, help="Scihub username. Sign up at https://scihub.copernicus.eu/")
     parser.add_argument("-p", "--password", type=str, help="Scihub password")
-    parser.add_argument("-t", "--tiles", nargs='+', help="Tile name(s) to download", default=[])
+    parser.add_argument("-t", "--tiles", nargs='+', help="Tile name(s) to download", default=s2_tiles)
     parser.add_argument("-l", "--level", type=str, default="1C", help="Download level '1C' (default) or '2A' data")
     parser.add_argument("-s", "--start", type=str, default="20150523", help="Start date for search in format YYYYMMDD. Defaults to '20150523'")
     parser.add_argument("-e", "--end", type=str, default=datetime.datetime.today().strftime('%Y%m%d'),
