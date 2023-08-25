@@ -283,7 +283,7 @@ def main():
     parser.add_argument("--maxcloud", type=int, default=100, help="Maximum percentage of cloud cover to download. Defaults to 100")
     parser.add_argument("--minsize", type=float, default=25.0, help="Minimum filesize to download in MB. Defaults to 25.0 MB")
     parser.add_argument("--output-dir", type=str, default=os.getcwd(), help="Output directory. Defaults to the present working directory")
-    parser.add_argument("--remove", type=bool, action="store_true", help="Delete level 1C .zip files after decompression is complete")
+    parser.add_argument("--remove", action="store_true", help="Delete level 1C .zip files after decompression is complete")
 
     args = parser.parse_args()
 
