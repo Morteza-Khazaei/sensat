@@ -273,8 +273,8 @@ class SenSat:
 def main():
     parser = argparse.ArgumentParser(description="Download Sentinel-2 data from the Copernicus Open Access Hub")
 
-    parser.add_argument("username", type=str, help="Scihub username. Sign up at https://scihub.copernicus.eu/")
-    parser.add_argument("password", type=str, help="Scihub password")
+    parser.add_argument("-u", "--username", type=str, help="Scihub username. Sign up at https://scihub.copernicus.eu/")
+    parser.add_argument("-p", "--password", type=str, help="Scihub password")
     parser.add_argument("-t", "--tiles", type=list, help="Tile name(s) to download")
     parser.add_argument("-l", "--level", type=str, default="1C", help="Download level '1C' (default) or '2A' data")
     parser.add_argument("-s", "--start", type=str, default="20150523", help="Start date for search in format YYYYMMDD. Defaults to '20150523'")
