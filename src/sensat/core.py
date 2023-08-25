@@ -271,16 +271,11 @@ class SenSat:
 
 
 def main():
-    s2_tiles = ['39STD', '39STC', '39STB', '38SQJ', '38SQH', 
-             '38SQG', '39SUC', '39SUB', '39SUA', '39SWA', 
-             '39SWV', '39SVB', '39SVA', '39SXA', '39SXV', 
-             '39SYB', '39SYA', '39SYV', '40SBG', '40SBF', 
-             '40SCH', '40SCG', '40SCF', '40SDH', '40SDG']
     parser = argparse.ArgumentParser(description="Download Sentinel-2 data from the Copernicus Open Access Hub")
 
     parser.add_argument("-u", "--username", type=str, help="Scihub username. Sign up at https://scihub.copernicus.eu/")
     parser.add_argument("-p", "--password", type=str, help="Scihub password")
-    parser.add_argument("-t", "--tiles", nargs='+', help="Tile name(s) to download", default=s2_tiles)
+    parser.add_argument("-t", "--tiles", nargs='+', help="Tile name(s) to download", default=[])
     parser.add_argument("-l", "--level", type=str, default="1C", help="Download level '1C' (default) or '2A' data")
     parser.add_argument("-s", "--start", type=str, default="20150523", help="Start date for search in format YYYYMMDD. Defaults to '20150523'")
     parser.add_argument("-e", "--end", type=str, default=datetime.datetime.today().strftime('%Y%m%d'),
@@ -288,9 +283,9 @@ def main():
     parser.add_argument("-c", "--maxcloud", type=int, default=100, help="Maximum percentage of cloud cover to download. Defaults to 100")
     parser.add_argument("-m", "--minsize", type=float, default=25.0, help="Minimum filesize to download in MB. Defaults to 25.0 MB")
     parser.add_argument("-d", "--output-dir", type=str, default=os.getcwd(), help="Output directory. Defaults to the present working directory")
-    parser.add_argument("-r", "--remove", action="store_true", help="Delete level 1C .zip files after decompression is complete", default=False)
+    parser.add_argument("-r", "--remove", action="store_true", help="Delete level 1C .zip files after decompression is complete")
 
     args = parser.parse_args()
 
     obj = SenSat(args.username, args.password, args.tiles, args.level, args.start, args.end, 
-           args.maxcloud, args.minsize, args.output_dir, args.remove)
+        args.maxcloud, args.minsize, args.output_dir, args.remove)
