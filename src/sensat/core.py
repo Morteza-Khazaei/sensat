@@ -16,7 +16,7 @@ class SenSat:
 
 
 
-    def __init__(self, username, password, tiles, level='1C', start='20150523', end=datetime.datetime.today().strftime('%Y%m%d'),
+    def __init__(self, username, password, tiles, level='1C', start='20150523', end=datetime.today().strftime('%Y%m%d'),
             maxcloud=100, minsize=25., output_dir=os.getcwd(), remove=False) -> None:
         """
         Download Sentinel-2 data from the Copernicus Open Access Hub, specifying a particular tile, date ranges and degrees
@@ -190,9 +190,9 @@ class SenSat:
         return np.array(size_mb)
 
 
-    def _search(self, tile, level='1C', start='20150523', end=datetime.datetime.today().strftime('%Y%m%d'), maxcloud=100,
+    def _search(self, tile, level='1C', start='20150523', end=datetime.today().strftime('%Y%m%d'), maxcloud=100,
             minsize=25.):
-        """search(tile, start = '20161206', end = datetime.datetime.today().strftime('%Y%m%d'),  maxcloud = 100, minsize_mb = 25.)
+        """search(tile, start = '20161206', end = datetime.today().strftime('%Y%m%d'),  maxcloud = 100, minsize_mb = 25.)
 
         Searches for images from a single Sentinel-2 Granule that meet conditions of date range and cloud cover.
 
@@ -355,7 +355,7 @@ def main():
     parser.add_argument("-t", "--tiles", nargs='+', help="Tile name(s) to download", default=s2_tiles)
     parser.add_argument("-l", "--level", type=str, default="1C", help="Download level '1C' (default) or '2A' data")
     parser.add_argument("-s", "--start", type=str, default="20150523", help="Start date for search in format YYYYMMDD. Defaults to '20150523'")
-    parser.add_argument("-e", "--end", type=str, default=datetime.datetime.today().strftime('%Y%m%d'),
+    parser.add_argument("-e", "--end", type=str, default=datetime.today().strftime('%Y%m%d'),
                         help="End date for search in format YYYYMMDD. Defaults to today's date")
     parser.add_argument("-c", "--maxcloud", type=int, default=100, help="Maximum percentage of cloud cover to download. Defaults to 100")
     parser.add_argument("-m", "--minsize", type=float, default=25.0, help="Minimum filesize to download in MB. Defaults to 25.0 MB")
