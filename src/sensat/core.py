@@ -1,9 +1,11 @@
 import argparse
-import datetime
+from datetime import date, datetime, timedelta
 import numpy as np
 import os
 import re
-import sentinelsat
+from cdsetool.query import query_features
+from cdsetool.download import download_feature
+from cdsetool.credentials import Credentials
 import zipfile
 
 
@@ -98,10 +100,65 @@ class SenSat:
         '''
 
         # Let API be accessed by other functions
-        global scihub_api
+        # The Copernicus Data Space Ecosystem OpenSearch API
+        global cdse_api
 
         # Connect to Sentinel API
-        scihub_api = sentinelsat.SentinelAPI(username, password, 'https://scihub.copernicus.eu/dhus')
+        cdse_api = Credentials(username, password)
+    
+
+    def _format_query_date(self, in_date):
+        r"""
+        Format a date, datetime or a YYYYMMDD string input as YYYY-MM-DDThh:mm:ssZ
+        or validate a date string as suitable for the full text search interface and return it.
+
+        `None` will be converted to '\*', meaning an unlimited date bound in date ranges.
+
+        Parameters
+        ----------
+        in_date : str or datetime or date or None
+            Date to be formatted
+
+        Returns
+        -------
+        str
+            Formatted string
+
+        Raises
+        ------
+        ValueError
+            If the input date type is incorrect or passed date string is invalid
+        """
+        if in_date is None:
+            return "*"
+        if isinstance(in_date, (datetime, date)):
+            return in_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        elif not isinstance(in_date, str):
+            raise ValueError("Expected a string or a datetime object. Received {}.".format(in_date))
+
+        in_date = in_date.strip()
+        if in_date == "*":
+            # '*' can be used for one-sided range queries e.g. ingestiondate:[* TO NOW-1YEAR]
+            return in_date
+
+        # Reference: https://cwiki.apache.org/confluence/display/solr/Working+with+Dates
+
+        # ISO-8601 date or NOW
+        valid_date_pattern = r"^(?:\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z|NOW)"
+        # date arithmetic suffix is allowed
+        units = r"(?:YEAR|MONTH|DAY|HOUR|MINUTE|SECOND)"
+        valid_date_pattern += r"(?:[-+]\d+{}S?)*".format(units)
+        # dates can be rounded to a unit of time
+        # e.g. "NOW/DAY" for dates since 00:00 today
+        valid_date_pattern += r"(?:/{}S?)*$".format(units)
+        in_date = in_date.strip()
+        if re.match(valid_date_pattern, in_date):
+            return in_date
+
+        try:
+            return datetime.strptime(in_date, "%Y%m%d").strftime("%Y-%m-%dT%H:%M:%SZ")
+        except ValueError:
+            raise ValueError("Unsupported date value {}".format(in_date))
 
 
     def _get_filesize(self, products_df):
@@ -151,7 +208,7 @@ class SenSat:
         """
 
         # Test that we're connected to the
-        assert 'scihub_api' in globals(), "The global variable scihub_api doesn't exist. You should run connectToAPI(username, password) before searching the data archive."
+        assert 'cdse_api' in globals(), "The global variable cdse_api doesn't exist. You should run connectToAPI(username, password) before searching the data archive."
 
         # Validate tile input format for search
         assert self._validateTile(tile), "The tile name input (%s) does not match the format ##XXX (e.g. 36KWA)." % tile
@@ -159,18 +216,18 @@ class SenSat:
         assert level in ['1C', '2A'], "Level must be '1C' or '2A'."
 
         # Set up start and end dates
-        startdate = sentinelsat.format_query_date(start)
-        enddate = sentinelsat.format_query_date(end)
+        startdate = self._format_query_date(start)
+        enddate = self._format_query_date(end)
 
-        # Search data, filtering by options.
-        products = scihub_api.query(beginposition=(startdate, enddate),
-                                    platformname='Sentinel-2',
-                                    producttype='S2MSI%s' % level,
-                                    cloudcoverpercentage=(0, maxcloud),
-                                    filename='*T%s*' % tile)
-
+        products = query_features('Sentinel2', {
+            'tileId': tile, 
+            'startDate': startdate, 
+            'completionDate': enddate,
+            'productType': 'S2MSI%s' % level,
+            'cloudCover': maxcloud
+        })
         # convert to Pandas DataFrame, which can be searched modified before commiting to download()
-        products_df = scihub_api.to_dataframe(products)
+        products_df = self._to_dataframe(products)
 
         # print('Found %s matching images' % str(len(products_df)))
 
@@ -184,6 +241,18 @@ class SenSat:
         print('Found %s matching images for tile: %s' % (str(len(products_df)), tile))
 
         return products_df
+    
+
+    def _to_dataframe(self, products):
+        """Return the products from a query response as a Pandas DataFrame
+        with the values in their appropriate Python types.
+        """
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError("to_dataframe requires the optional dependency Pandas.")
+
+        return pd.DataFrame.from_dict(products, orient="index")
 
 
     def _download(self, products_df, output_dir=os.getcwd()):
@@ -223,7 +292,8 @@ class SenSat:
                     try:
                         # Download selected product
                         print ('Downloading %s...' % filename)
-                        scihub_api.download(uuid, output_dir)
+                        # cdse_api.download(uuid, output_dir)
+                        download_feature()
 
                         downloaded_files.append(('%s/%s' % (output_dir.rstrip('/'), filename)).replace('.SAFE', '.zip'))
                     except:
