@@ -295,7 +295,7 @@ class SenSat:
                     try:
                         # Download selected product
                         print ('Downloading %s...' % filename)
-                        idx = download_feature(feature.to_dict(), output_dir)
+                        idx = download_feature(feature.to_dict(), output_dir, {"credentials": cdse_api})
 
                         downloaded_files.append(('%s/%s' % (output_dir.rstrip('/'), filename)).replace('.SAFE', '.zip'))
                     except:
