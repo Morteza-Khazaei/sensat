@@ -22,8 +22,8 @@ class SenSat:
         of cloud cover. This is the function that is initiated from the command line.
 
         Args:
-            username: Scihub username. Sign up at https://scihub.copernicus.eu/.
-            password: Scihub password.
+            username: cdse username. Sign up at https://identity.dataspace.copernicus.eu/auth.
+            password: cdse password.
             tiles: A string containing the name of the tile to to download, or a list of tiles.
             level: Download level '1C' (default) or '2A' data.
             start: Start date for search in format YYYYMMDD. Defaults to '20150523'.
@@ -92,11 +92,11 @@ class SenSat:
 
     def _connectToAPI(self, username, password):
         '''
-        Connect to the SciHub API with sentinelsat.
+        Connect to the cdse API with sentinelsat.
 
         Args:
-            username: Scihub username. Sign up at https://scihub.copernicus.eu/.
-            password: Scihub password.
+            username: cdse username. Sign up at https://identity.dataspace.copernicus.eu/auth.
+            password: cdse password.
         '''
 
         # Let API be accessed by other functions
@@ -224,7 +224,7 @@ class SenSat:
             'startDate': startdate, 
             'completionDate': enddate,
             'productType': 'S2MSI%s' % level,
-            'cloudCover': maxcloud
+            'cloudCover': f'[0,{maxcloud}]'
         })
         # convert to Pandas DataFrame, which can be searched modified before commiting to download()
         products_df = self._to_dataframe(products)
@@ -275,7 +275,9 @@ class SenSat:
 
             downloaded_files = []
 
-            for uuid, filename in zip(products_df['uuid'], products_df['filename']):
+            # for uuid, filename in products_df['filename']:
+            for index, feature in products_df.iterrows():
+                filename = feature.get("properties").get("title")
 
                 if os.path.exists('%s/%s' % (output_dir, filename[:-5] + '.zip')):
                     print ('Skipping file %s, as it has already been downloaded in the directory %s. If you want to re-download it, delete it and run again.' % (
@@ -292,8 +294,7 @@ class SenSat:
                     try:
                         # Download selected product
                         print ('Downloading %s...' % filename)
-                        # cdse_api.download(uuid, output_dir)
-                        download_feature()
+                        idx = download_feature(feature.to_dict(), output_dir)
 
                         downloaded_files.append(('%s/%s' % (output_dir.rstrip('/'), filename)).replace('.SAFE', '.zip'))
                     except:
@@ -305,7 +306,7 @@ class SenSat:
     def _decompress(self, zip_files, output_dir=os.getcwd(), remove=False):
         '''decompress(zip_files, output_dir = os.getcwd(), remove = False
 
-        Decompresses .zip files downloaded from SciHub, and optionally removes original .zip file.
+        Decompresses .zip files downloaded from cdse, and optionally removes original .zip file.
 
         Args:
             zip_files: A list of .zip files to decompress.
@@ -348,8 +349,8 @@ def main():
              '40SCH', '40SCG', '40SCF', '40SDH', '40SDG']
     parser = argparse.ArgumentParser(description="Download Sentinel-2 data from the Copernicus Open Access Hub")
 
-    parser.add_argument("-u", "--username", type=str, help="Scihub username. Sign up at https://scihub.copernicus.eu/")
-    parser.add_argument("-p", "--password", type=str, help="Scihub password")
+    parser.add_argument("-u", "--username", type=str, help="cdse username. Sign up at https://identity.dataspace.copernicus.eu/auth")
+    parser.add_argument("-p", "--password", type=str, help="cdse password")
     parser.add_argument("-t", "--tiles", nargs='+', help="Tile name(s) to download", default=s2_tiles)
     parser.add_argument("-l", "--level", type=str, default="1C", help="Download level '1C' (default) or '2A' data")
     parser.add_argument("-s", "--start", type=str, default="20150523", help="Start date for search in format YYYYMMDD. Defaults to '20150523'")
