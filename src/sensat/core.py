@@ -247,6 +247,19 @@ class SenSat:
         print('Found %s matching images for tile: %s' % (str(len(products_df)), tile))
 
         return products_df
+    
+
+    def _convert_to_nested_dict(self, flat_dict):
+        nested_dict = {}
+        for key, value in flat_dict.items():
+            keys = key.split('.')
+            current_dict = nested_dict
+
+            for k in keys[:-1]:
+                current_dict = current_dict.setdefault(k, {})
+            current_dict[keys[-1]] = value
+
+        return nested_dict
 
 
     def _download(self, products_df, output_dir=os.getcwd()):
@@ -288,7 +301,7 @@ class SenSat:
                     try:
                         # Download selected product
                         print ('Downloading %s...' % filename)
-                        idx = download_feature(feature.to_dict(), output_dir, {"credentials": cdse_api})
+                        idx = download_feature(self._convert_to_nested_dict(feature.to_dict()), output_dir, {"credentials": cdse_api})
 
                         downloaded_files.append(('%s/%s' % (output_dir.rstrip('/'), filename)).replace('.SAFE', '.zip'))
                     except:
