@@ -3,6 +3,7 @@ import re
 import zipfile
 import argparse
 import numpy as np
+import pandas as pd
 from cdsetool.query import query_features
 from cdsetool.download import download_feature
 from cdsetool.credentials import Credentials
@@ -172,8 +173,12 @@ class SenSat:
             A numpy array with file sizes in MB.
         """
 
-        size = [int(float(str(i).split(' ')[0])) for i in products_df['size'].values]
-        suffix = [str(i).split(' ')[1].lower() for i in products_df['size'].values]
+        size = [int(float(str(i).split(' ')[0])) for i in products_df['properties.services.download.size'].values]
+        # suffix = [str(i).split(' ')[1].lower() for i in products_df['properties.services.download.size'].values]
+        suffix = [
+            str(i).split(' ')[1].lower() if len(str(i).split(' ')) > 1 else 'mb' 
+            for i in products_df['properties.services.download.size'].values
+        ]
 
         size_mb = []
 
@@ -228,9 +233,9 @@ class SenSat:
             'cloudCover': f'[0,{maxcloud}]'
         })
         # convert to Pandas DataFrame, which can be searched modified before commiting to download()
-        products_df = self._to_dataframe(products)
-
-        # print('Found %s matching images' % str(len(products_df)))
+        # Flatten the nested JSON object
+        flat_json = pd.json_normalize(products)
+        products_df = pd.DataFrame(flat_json)
 
         # Where no results for tile
         if len(products_df) == 0: return products_df
@@ -242,18 +247,6 @@ class SenSat:
         print('Found %s matching images for tile: %s' % (str(len(products_df)), tile))
 
         return products_df
-    
-
-    def _to_dataframe(self, products):
-        """Return the products from a query response as a Pandas DataFrame
-        with the values in their appropriate Python types.
-        """
-        try:
-            import pandas as pd
-        except ImportError:
-            raise ImportError("to_dataframe requires the optional dependency Pandas.")
-
-        return pd.DataFrame.from_dict(products, orient="index")
 
 
     def _download(self, products_df, output_dir=os.getcwd()):
@@ -278,7 +271,7 @@ class SenSat:
 
             # for uuid, filename in products_df['filename']:
             for index, feature in products_df.iterrows():
-                filename = feature.get("properties").get("title")
+                filename = feature.get("properties.title")
 
                 if os.path.exists('%s/%s' % (output_dir, filename[:-5] + '.zip')):
                     print ('Skipping file %s, as it has already been downloaded in the directory %s. If you want to re-download it, delete it and run again.' % (
